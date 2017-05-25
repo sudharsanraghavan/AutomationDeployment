@@ -10,6 +10,7 @@ class CreateStacks(object):
     user data file for each instance if any and launch the openstack environment using HEAT orchestration
     """
     def __init__(self, env):
+        """ constructor to initialize token and get the endpoint list for the environment specified """
         self.env = env
         self.authtoken = self.AuthToken()
     def AuthToken(self):
