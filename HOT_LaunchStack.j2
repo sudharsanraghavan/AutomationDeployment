@@ -12,6 +12,7 @@ heat_template_version: 2013-05-23
 description: HOT to Launch stack of the instances along with Networks and security groups
 
 parameters:
+  {%- if secgroup['name'] %}
   security_group_name:
     type: string
     description: security group name
@@ -41,6 +42,7 @@ parameters:
     type: string
     description: ethertype
   {%- endfor %}
+  {%- endif %}
 
   {%- for net in networks %}
   network_{{net['name']}}_ipversion:
@@ -63,6 +65,7 @@ parameters:
   {%- endfor %}
 
 resources:
+  {%- if secgroup['name'] %}
   # Security groups
   #################
   server_security_group:
@@ -84,7 +87,7 @@ resources:
           {%- endif %}
           "ethertype": {get_param: sg_ethertype_{{loop.index}}}
   {%- endfor %}
-
+  {%- endif %}
   # Networks
   ##########
   {%- for net in networks %}

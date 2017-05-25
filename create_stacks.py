@@ -40,37 +40,42 @@ class CreateStacks(object):
     def generatevars(self, env):
         self.templatevars = dict()
         self.templatevars.update(env['endpoint'].authtoken)
-        self.templatevars['secgroup'] = env['security_groups']
-        self.templatevars['networks'] = env['network_details']
-        self.templatevars['instances'] = env['inst_details']
+        self.templatevars['secgroup'] = utils.getSecurityGroupDetails(env_file = env['env_file'], env = env['env'])
+        self.templatevars['networks'] = utils.getNetworkDetails(env_file = env['env_file'], env = env['env'])
+        self.templatevars['instances'] = utils.getInstanceDetails(env_file = env['env_file'], env = env['env'], inst_list = env['inst_list'])
+        self.templatevars['stackname'] = utils.getStackName(env_file = env['env_file'] , env = env['env'])
+        self.templatevars['HOT_jinja'] = env['HOT_file']
+        self.templatevars['HOP_jinja'] = env['HOP_file']
         return self.templatevars
 
-    def generateHOT(self, env):
-        self.hot = utils.yamltojson(utils.processJinja(jinja_template = env['HOTemplate'], datavars = self.templatevars))
+    def generateHOT(self):
+        self.hot = utils.yamltojson(utils.processJinja(jinja_template = self.templatevars['HOT_jinja'], datavars = self.templatevars))
         return self.hot
 
-    def generateParams(self, env):
-        self.hop = utils.yamltojson(utils.processJinja(jinja_template = env['HOTparams'], datavars = self.templatevars))
+    def generateParams(self):
+        self.hop = utils.yamltojson(utils.processJinja(jinja_template = self.templatevars['HOP_jinja'], datavars = self.templatevars))
         self.files_hop = utils.replaceQuotes(self.hop)
         return self.hop, self.files_hop
 
-    def launchStacks(self, env):
-        heat_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': env['endpoint'].authtoken['token']}
+    def launchStacks(self):
+        heat_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': self.templatevars['token']}
         heat_data = '{"files": {"file:///params":\"' + self.files_hop + '\"},'
         heat_data += '"disable_rollback": true,'
         heat_data += '"parameters": {},'
-        heat_data += '"stack_name": "launchstack",'
+        heat_data += '"stack_name": ' + '"' + self.templatevars['stackname'] + '",'
         heat_data += '"environment_files": ["file:///params"],'
         heat_data += '"environment": ' + self.hop + ','
         heat_data += '"template": ' + self.hot + '}'
         try:
-            heat_response = requests.post(url = env['endpoint'].authtoken['heat'] + '/stacks', data=heat_data, headers=heat_headers)
+            heat_response = requests.post(url = self.templatevars['heat'] + '/stacks', data=heat_data, headers=heat_headers)
             if heat_response.status_code != 201:
                 sys.exit("HEAT Stack creation Failed: " + heat_response.json()['error']['message'])
             self.stack_id = heat_response.json()['stack']['id']
             self.stack_url = heat_response.json()['stack']['links'][0]['href']
-            return self.stack_id, self.stack_url
+            return self.stack_url
         except Exception as e:
             return e
+    def getStackStatus(self):
+        pass
 
 

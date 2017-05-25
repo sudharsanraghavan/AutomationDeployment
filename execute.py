@@ -61,12 +61,11 @@ def launch(env_list, inst_list):
             pass
         env_details = {
             'env': env,
+            'env_file': env_file,
+            'HOT_file': stack_template,
+            'HOP_file': stack_params,
             'endpoint': create_stacks.CreateStacks(env),
-            'inst_details': utils.getInstanceDetails(env_file = env_file, env = env, inst_list = inst),
-            'network_details': utils.getNetworkDetails(env_file = env_file, env = env),
-            'security_groups': utils.getSecurityGroupDetails(env_file = env_file, env = env),
-            'HOTemplate': stack_template,
-            'HOTparams': stack_params
+            'inst_list': inst
         }
         os_details.append(env_details)
     return createstacks(os_details)
@@ -74,10 +73,10 @@ def launch(env_list, inst_list):
 def createstacks(osdetails):
     for env in osdetails:
         env['endpoint'].generatevars(env)
-        heat_template = env['endpoint'].generateHOT(env)
-        heat_params, heat_converted_params = env['endpoint'].generateParams(env)
-        stack_id, stack_url = env['endpoint'].launchStacks(env)
-
+        env['endpoint'].generateHOT()
+        env['endpoint'].generateParams()
+        stackURI = env['endpoint'].launchStacks()
+        print stackURI
 def terminate(env_list, inst_list):
     print "Terminating environment {0} and instance {1}".format(env_list, inst_list)
 

@@ -1,5 +1,6 @@
 ---
 parameters:
+{%- if secgroup['name'] %}
   security_group_name: {{secgroup['name']}}
 {%- for secgrp in secgroup['rules'] %}
   remote_ip_prefix_{{loop.index}}: {{secgrp['remote_ip_prefix']}}
@@ -15,6 +16,7 @@ parameters:
   {%- endif %}
   sg_ethertype_{{loop.index}}: {{secgrp['ethertype']}}
 {%- endfor %}
+{%- endif %}
 {%- for net in networks %}
   network_{{net['name']}}_cidr: {{ net['subnet']['cidr'] }}
   network_{{net['name']}}_gateway: {{ net['subnet']['gateway'] }}
