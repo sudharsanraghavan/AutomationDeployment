@@ -1,0 +1,24 @@
+---
+parameters:
+  security_group_name: {{secgroup['name']}}
+{%- for secgrp in secgroup['rules'] %}
+  remote_ip_prefix_{{loop.index}}: {{secgrp['remote_ip_prefix']}}
+  {%- if secgrp.protocol %}
+  sg_protocol_{{loop.index}}: {{secgrp['protocol']}}
+  {%- endif %}
+  sg_direction_{{loop.index}}: {{secgrp['direction']}}
+  {%- if secgrp.port_range_min %}
+  sg_port_range_min_{{loop.index}}: {{secgrp['port_range_min']}}
+  {%- endif %}
+  {%- if secgrp.port_range_max %}
+  sg_port_range_max_{{loop.index}}: {{secgrp['port_range_max']}}
+  {%- endif %}
+  sg_ethertype_{{loop.index}}: {{secgrp['ethertype']}}
+{%- endfor %}
+{%- for net in networks %}
+  network_{{net['name']}}_cidr: {{ net['subnet']['cidr'] }}
+  network_{{net['name']}}_gateway: {{ net['subnet']['gateway'] }}
+  network_{{net['name']}}_start: {{ net['subnet']['start'] }}
+  network_{{net['name']}}_end: {{ net['subnet']['end'] }}
+  network_{{net['name']}}_ipversion: {{ net['subnet']['ip_version'] }}
+{%- endfor %}

@@ -1,0 +1,130 @@
+---
+- name: env1
+  heat_stack_name: LaunchInstances
+  networks:
+  - name: VERSA_MGMT_CONTROLLER
+    subnet:
+      cidr: 10.1.8.0/24
+      start: 10.1.8.32
+      end: 10.1.8.127
+      gateway: 10.1.8.1
+      ip_version: 4
+  - name: VERSA_MGMT_LOCAL
+    subnet:
+      cidr: 10.1.9.0/24
+      start: 10.1.9.32
+      end: 10.1.9.127
+      gateway: 10.1.9.1
+      ip_version: 4
+  security_groups:
+    name: sg-allowAll
+    rules:
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: egress
+      "ethertype": IPv4
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: ingress
+      "ethertype": IPv4
+  instances:
+  - name: Jump
+    hostname: Jump-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+    ips:
+    - interface: eth0
+      ip: 10.1.9.5
+      port: VERSA_MGMT_LOCAL
+    - interface: eth1
+      ip: 10.1.8.5
+      port: VERSA_MGMT_CONTROLLER
+  - name: TACACS
+    hostname: TACACS-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+    ips:
+    - interface: eth0
+      ip: 10.1.9.6
+      port: VERSA_MGMT_LOCAL
+    - interface: eth1
+      ip: 10.1.8.6
+      port: VERSA_MGMT_CONTROLLER
+- name: env2
+  heat_stack_name: LaunchInstances
+  networks:
+  - name: VERSA_MGMT_CONTROLLER
+    subnet:
+      cidr: 10.1.8.0/24
+      start: 10.1.8.32
+      end: 10.1.8.127
+  - name: VERSA_MGMT_LOCAL
+    subnet:
+      cidr: 10.1.9.0/24
+      start: 10.1.9.32
+      end: 10.1.9.127
+  security_groups:
+    name: sg-allowAll
+    rules:
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: egress
+      "ethertype": IPv4
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: ingress
+      "ethertype": IPv4
+  instances:
+  - name: Jump
+    hostname: Jump-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+  - name: TACACS
+    hostname: TACACS-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+- name: env3
+  heat_stack_name: LaunchInstances
+  networks:
+  - name: VERSA_MGMT_CONTROLLER
+    subnet:
+      cidr: 10.1.8.0/24
+      start: 10.1.8.32
+      end: 10.1.8.127
+      gateway: 10.1.8.1
+      ip_version: 4
+  - name: VERSA_MGMT_LOCAL
+    subnet:
+      cidr: 10.1.9.0/24
+      start: 10.1.9.32
+      end: 10.1.9.127
+      gateway: 10.1.9.1
+      ip_version: 4
+  security_groups:
+    name: sg-allowAll
+    rules:
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: egress
+      "ethertype": IPv4
+    - remote_ip_prefix: 0.0.0.0/0
+      direction: ingress
+      "ethertype": IPv4
+  instances:
+  - name: Jump
+    hostname: Jump-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+    ips:
+    - interface: eth0
+      ip: 10.1.9.5
+      port: VERSA_MGMT_LOCAL
+    - interface: eth1
+      ip: 10.1.8.5
+      port: VERSA_MGMT_CONTROLLER
+  - name: TACACS
+    hostname: TACACS-wc
+    image: Ubuntu_cloud-14.04
+    flavor: m1.small
+    ips:
+    - interface: eth0
+      ip: 10.1.9.6
+      port: VERSA_MGMT_LOCAL
+    - interface: eth1
+      ip: 10.1.8.6
+      port: VERSA_MGMT_CONTROLLER

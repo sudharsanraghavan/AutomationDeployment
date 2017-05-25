@@ -1,0 +1,112 @@
+---
+{%- if os_version.strip().lower() == 'newton' %}
+heat_template_version: 2016-10-14
+{%- elif os_version.lower() == 'mitaka' %}
+heat_template_version: 2016-04-08
+{%- elif os_version.lower() == 'liberty' %}
+heat_template_version: 2015-10-15
+{%- else %}
+heat_template_version: 2013-05-23
+{%- endif %}
+
+description: HOT to Launch stack of the instances along with Networks and security groups
+
+parameters:
+  security_group_name:
+    type: string
+    description: security group name
+  {%- for secgrp in secgroup['rules'] %}
+  remote_ip_prefix_{{loop.index}}:
+    type: string
+    description: remote IP
+  {%- if secgrp.protocol %}
+  sg_protocol_{{loop.index}}:
+    type: string
+    description: protocol being used
+  {%- endif %}
+  sg_direction_{{loop.index}}:
+    type: string
+    description: Direction
+  {%- if secgrp.port_range_min %}
+  sg_port_range_min_{{loop.index}}:
+    type: string
+    description: minimum port range
+  {%- endif %}
+  {%- if secgrp.port_range_max %}
+  sg_port_range_max_{{loop.index}}:
+    type: string
+    description: maximum port range
+  {%- endif %}
+  sg_ethertype_{{loop.index}}:
+    type: string
+    description: ethertype
+  {%- endfor %}
+
+  {%- for net in networks %}
+  network_{{net['name']}}_ipversion:
+    type: string
+    description: network ip version
+  network_{{net['name']}}_cidr:
+    type: string
+    description: CIDR of the network
+  {%- if net['subnet']['gateway'] %}
+  network_{{net['name']}}_gateway:
+    type: string
+    description: gateway of the network
+  {%- endif %}
+  network_{{net['name']}}_start:
+    type: string
+    description: start IP range of the network
+  network_{{net['name']}}_end:
+    type: string
+    description: end ip range of the network
+  {%- endfor %}
+
+resources:
+  # Security groups
+  #################
+  server_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: { get_param: security_group_name }
+      rules:
+  {%- for secgrp in secgroup['rules'] %}
+        - remote_ip_prefix: {get_param: remote_ip_prefix_{{loop.index}}}
+          {%- if secgrp.protocol %}
+          protocol: {get_param: sg_protocol_{{loop.index}}}
+          {%- endif %}
+          direction: {get_param: sg_direction_{{loop.index}}}
+          {%- if secgrp.port_range_min %}
+          port_range_min: {get_param: sg_port_range_min_{{loop.index}}}
+          {%- endif %}
+          {%- if secgrp.port_range_max %}
+          port_range_max: {get_param: sg_port_range_max_{{loop.index}}}
+          {%- endif %}
+          "ethertype": {get_param: sg_ethertype_{{loop.index}}}
+  {%- endfor %}
+
+  # Networks
+  ##########
+  {%- for net in networks %}
+  {{net['name']}}:
+    type: OS::Neutron::Net
+    properties:
+      name: {{net['name']}}
+      shared: false
+      admin_state_up: true
+  subnet_{{net['name']}}_net_name:
+    type: OS::Neutron::Subnet
+    properties:
+     name: subnet_{{net['name']}}
+     network_id: { get_resource: {{net['name']}} }
+     ip_version: {get_param: network_{{net['name']}}_ipversion}
+     cidr: { get_param: network_{{net['name']}}_cidr }
+     {%- if net['subnet']['gateway'] %}
+     gateway_ip: {get_param: network_{{net['name']}}_gateway}
+     {%- else %}
+     gateway_ip: null
+     {%- endif %}
+     allocation_pools:
+       - start: { get_param: network_{{net['name']}}_start }
+         end: { get_param: network_{{net['name']}}_end }
+  {%- endfor %}
