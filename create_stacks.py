@@ -78,7 +78,6 @@ class CreateStacks(object):
             heat_response = requests.post(url = self.templatevars['heat'] + '/stacks', data=heat_data, headers=heat_headers)
             if heat_response.status_code != 201:
                 sys.exit("HEAT Stack creation Failed: " + heat_response.json()['error']['message'])
-            self.stack_id = heat_response.json()['stack']['id']
             self.stack_url = heat_response.json()['stack']['links'][0]['href']
             return self.stack_url
         except Exception as e:
