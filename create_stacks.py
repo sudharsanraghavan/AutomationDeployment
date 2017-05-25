@@ -6,6 +6,9 @@ import sys
 import utils
 
 class CreateStacks(object):
+    """ CreateStacks class has all the methods to generate the HOT and supporting parameter file, 
+    user data file for each instance if any and launch the openstack environment using HEAT orchestration
+    """
     def __init__(self, env):
         self.env = env
         self.authtoken = self.AuthToken()
@@ -38,6 +41,7 @@ class CreateStacks(object):
             # steps for v2 token generation
 
     def generatevars(self, env):
+        """ To generate all the required variables for the jinja templates to process and to launch the HEAT stacks """
         self.templatevars = dict()
         self.templatevars.update(env['endpoint'].authtoken)
         self.templatevars['secgroup'] = utils.getSecurityGroupDetails(env_file = env['env_file'], env = env['env'])
@@ -49,15 +53,18 @@ class CreateStacks(object):
         return self.templatevars
 
     def generateHOT(self):
+        """ Generate HOT based on the data vars provided to jinja template """
         self.hot = utils.yamltojson(utils.processJinja(jinja_template = self.templatevars['HOT_jinja'], datavars = self.templatevars))
         return self.hot
 
     def generateParams(self):
+        """ Generate paramters to support the HOT and the same will be used while invoking HEAT API """
         self.hop = utils.yamltojson(utils.processJinja(jinja_template = self.templatevars['HOP_jinja'], datavars = self.templatevars))
         self.files_hop = utils.replaceQuotes(self.hop)
         return self.hop, self.files_hop
 
     def launchStacks(self):
+        """ Launch the HEAT stacks based on the generated HOT and the supporting parameter file """
         heat_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': self.templatevars['token']}
         heat_data = '{"files": {"file:///params":\"' + self.files_hop + '\"},'
         heat_data += '"disable_rollback": true,'
