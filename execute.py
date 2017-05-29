@@ -75,8 +75,8 @@ def createstacks(osdetails):
         env['endpoint'].generatevars(env)
         env['endpoint'].generateHOT()
         env['endpoint'].generateParams()
-        stackURI = env['endpoint'].launchStacks()
-        print stackURI
+        env['endpoint'].launchStacks()
+        env['endpoint'].getStackStatus()
 def terminate(env_list, inst_list):
     print "Terminating environment {0} and instance {1}".format(env_list, inst_list)
 

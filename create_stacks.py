@@ -4,6 +4,8 @@ import json
 import requests
 import sys
 import utils
+import time
+import os
 
 class CreateStacks(object):
     """ CreateStacks class has all the methods to generate the HOT and supporting parameter file, 
@@ -66,7 +68,7 @@ class CreateStacks(object):
 
     def launchStacks(self):
         """ Launch the HEAT stacks based on the generated HOT and the supporting parameter file """
-        heat_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': self.templatevars['token']}
+        self.heat_headers = {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Auth-Token': self.templatevars['token']}
         heat_data = '{"files": {"file:///params":\"' + self.files_hop + '\"},'
         heat_data += '"disable_rollback": true,'
         heat_data += '"parameters": {},'
@@ -75,14 +77,32 @@ class CreateStacks(object):
         heat_data += '"environment": ' + self.hop + ','
         heat_data += '"template": ' + self.hot + '}'
         try:
-            heat_response = requests.post(url = self.templatevars['heat'] + '/stacks', data=heat_data, headers=heat_headers)
+            heat_response = requests.post(url = self.templatevars['heat'] + '/stacks', data=heat_data, headers=self.heat_headers)
             if heat_response.status_code != 201:
                 sys.exit("HEAT Stack creation Failed: " + heat_response.json()['error']['message'])
             self.stack_url = heat_response.json()['stack']['links'][0]['href']
             return self.stack_url
         except Exception as e:
             return e
+    def getResourceDetails(self):
+        resp = requests.get(url = self.stack_url + '/resources', headers = self.heat_headers)
+        os.system('clear')
+        print "+ {0}".format('-' * 40)
+        for resource in resp.json()['resources']:
+            print "| {0:<40} | {1:<15} |\r".format(resource['resource_name'], resource['resource_status'])
+        print "+ {0:<40} + {1:<15} +\r".format("-", "-")
+        
     def getStackStatus(self):
-        pass
+        while True:
+            resp = requests.get(url = self.stack_url, headers = self.heat_headers)
+            if resp.status_code != 200:
+                sys.exit("HEAT Stack creation Failed after successfull launching")
+            if "CREATE_IN_PROGRESS" == resp.json()['stack']['stack_status']:
+                self.getResourceDetails()
+                time.sleep(5)
+            if "CREATE_COMPLETE" == resp.json()['stack']['stack_status'] or "CREATE_FAILED" == resp.json()['stack']['stack_status']:
+                self.getResourceDetails()
+                return 1
+
 
 
