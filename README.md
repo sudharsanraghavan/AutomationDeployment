@@ -18,4 +18,3 @@ python execute.py -e env1 -i inst1,inst2 -t
 In case of multiple environments to be launched - Usage Example -
 python execute.py -e <env_name1> -i <inst_list> -e <env_name2> -i <inst_list> -l
 python execute.py -e <env_name1> -i <inst_list> -e <env_name2> -i <inst_list> -t
-ubuntu@ubuntu:~/AutomationDeployment$
