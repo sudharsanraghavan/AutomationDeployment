@@ -2,7 +2,7 @@ Automation Deployment using HEAT orchestration engine on Openstack Environment
 
 Usage Example
 
-ubuntu@ubuntu:~/AutomationDeployment$ python execute.py -h
+python execute.py -h
 usage: 'python execute.py -e <env_name> -i <inst_list> -l' to launch the instances
 usage: 'python execute.py -e <env_name> -i <inst_list> -t' to terminate the instances
 -l : To launch the instances
